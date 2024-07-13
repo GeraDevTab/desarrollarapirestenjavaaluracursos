@@ -10,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -20,11 +22,20 @@ public class MedicoController {
     @Autowired
     private MedicoRepository medicoRepository;
 
-    @PostMapping
-    public void registrarMedico(@RequestBody @Valid DatosRegistroMedico datosRegistroMedico){
+    @PostMapping//se coloca el tipo de dato generico que retornara REsponseEntity
+    public ResponseEntity<DatosRespuestaMedico> registrarMedico(@RequestBody @Valid DatosRegistroMedico datosRegistroMedico, UriComponentsBuilder uriComponentsBuilder){
         System.out.println("Elr equest llega correctamente");
         System.out.println(datosRegistroMedico);
-        medicoRepository.save(new Medico(datosRegistroMedico));
+        Medico medico = medicoRepository.save(new Medico(datosRegistroMedico));
+        DatosRespuestaMedico datosRespuestaMedico = new DatosRespuestaMedico(medico.getId(), medico.getNombre(),
+                medico.getEmail(), medico.getTelefono(), medico.getDocumento(),
+                new DatosDireccion(medico.getDireccion().getCalle(),medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(), medico.getDireccion().getComplemento()));
+        URI url = uriComponentsBuilder.path("medicos/{id}").buildAndExpand(medico.getId()).toUri();
+        return ResponseEntity.created(url).body(datosRespuestaMedico);
+        // return 201 created
+        //deberia de devolver la ruta donde puedes ver el objeto creado
+        // http://localhots:8080/medico/xx
     }
 
     //el codigo siguiente es para tgrabajar con listas de objetos
@@ -37,11 +48,11 @@ public class MedicoController {
 
     //el codigo siguiente es para tgrabajar con paginacion osea "pages"
     @GetMapping//la anotacion @pageabledefault, para establecer parametros por defecto, en este caso el size en 2
-    public Page<DatosListadoMedico> listadoMedicos(@PageableDefault(size = 3) Pageable paginacion){
+    public ResponseEntity<Page<DatosListadoMedico>> listadoMedicos(@PageableDefault(size = 3) Pageable paginacion){
 //        return medicoRepository.findAll(paginacion)
 //                .map(DatosListadoMedico::new);
-        return medicoRepository.findByActivoTrue(paginacion)
-                .map(DatosListadoMedico::new);
+        return ResponseEntity.ok(medicoRepository.findByActivoTrue(paginacion)
+                .map(DatosListadoMedico::new));
     }
 
     @PutMapping
@@ -75,4 +86,14 @@ public class MedicoController {
 //        //medicoRepository.delete(medico);
 //
 //    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DatosRespuestaMedico> retornaDatosMedicos(@PathVariable Long id){
+        Medico medico = medicoRepository.getReferenceById(id);
+        var datosMedico = new DatosRespuestaMedico(medico.getId(), medico.getNombre(),
+                medico.getEmail(), medico.getTelefono(), medico.getDocumento(),
+                new DatosDireccion(medico.getDireccion().getCalle(),medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(), medico.getDireccion().getComplemento()));
+        return ResponseEntity.ok(datosMedico);
+    }
 }
