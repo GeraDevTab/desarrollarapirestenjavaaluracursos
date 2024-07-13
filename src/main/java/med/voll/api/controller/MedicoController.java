@@ -2,6 +2,7 @@ package med.voll.api.controller;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import med.voll.api.direccion.DatosDireccion;
 import med.voll.api.medico.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,9 +48,13 @@ public class MedicoController {
     @Transactional //@Transsactional esta anotacion es para asegurar que se ejecute la operacion enla base de datos,
     // ademas que si tengo 2 o mas acciones a la base de datos y una falla, se hace un roll back a la
     // base de datos y se regresa a su estado anterior, es decir, no sucedio nada.
-    public void actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico){
+    public ResponseEntity actualizarMedico(@RequestBody @Valid DatosActualizarMedico datosActualizarMedico){
         Medico medico = medicoRepository.getReferenceById(datosActualizarMedico.id());
         medico.actualizarDatos(datosActualizarMedico);
+        return ResponseEntity.ok(new DatosRespuestaMedico(medico.getId(), medico.getNombre(),
+                medico.getEmail(), medico.getTelefono(), medico.getDocumento(),
+                new DatosDireccion(medico.getDireccion().getCalle(),medico.getDireccion().getDistrito(),
+                        medico.getDireccion().getCiudad(), medico.getDireccion().getNumero(), medico.getDireccion().getComplemento())));
 
     }
 
