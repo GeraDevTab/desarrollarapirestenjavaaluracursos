@@ -1,6 +1,8 @@
 package med.voll.api.domain.consulta;
 
 import jakarta.validation.ValidationException;
+import med.voll.api.domain.consulta.validaciones.HorarioAnticipacion;
+import med.voll.api.domain.consulta.validaciones.ValidadorDeConsultas;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.Paciente;
@@ -8,6 +10,8 @@ import med.voll.api.domain.paciente.PacienteRepository;
 import med.voll.api.infra.errores.ValidacionDeIntegridad;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AgendaDeConsultaService {
@@ -21,6 +25,14 @@ public class AgendaDeConsultaService {
     @Autowired
     private ConsultaRepository consultaRepository;
 
+    //aqui se hizo una lista, esta lista puede captar elementos que implementan una interfaz llamada validador de consulta
+    //cada clase que la implementa recibe el mismo tipo de objeto para realizar sus validacion
+    //de esa manera nos evitamos de agregar clase por clase, y por ejemplo se se implementan 100 clases o se eliminan algunas
+    //es el mismo resultado
+    //y con el autowired a la lista se entiende que a cualquier elemento se va a realizar la inyeccion
+    @Autowired
+    List<ValidadorDeConsultas> validadores;
+
     public void agendar(DatosAgendarConsulta datos){
         if (pacienteRepository.findById(datos.idPaciente()).isPresent()){
             throw new ValidacionDeIntegridad("este id para el paciente no fue encontrado");
@@ -32,6 +44,13 @@ public class AgendaDeConsultaService {
         }
 
         //validaciones
+        /*
+        aqui realizamos un forech para que todos los validadores sean ejecutados ya que todos reciben el mismo parametro
+        */
+         */
+        validadores.forEach(v -> v.validar(datos));
+
+
         var medico = seleccionarMedico(datos);
 
         var paciente = pacienteRepository.findById(datos.idPaciente()).get();
