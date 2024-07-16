@@ -34,11 +34,12 @@ public class AgendaDeConsultaService {
     List<ValidadorDeConsultas> validadores;
 
     public void agendar(DatosAgendarConsulta datos){
-        if (pacienteRepository.findById(datos.idPaciente()).isPresent()){
+        //aqui se verifica si el paciente es encontrado o no, boolean
+        if (!pacienteRepository.findById(datos.idPaciente()).isPresent()){
             throw new ValidacionDeIntegridad("este id para el paciente no fue encontrado");
         }
 
-        if(datos.idMedico()!= null && medicoRepository.existsById(datos.idMedico())){
+        if(datos.idMedico()!= null && !medicoRepository.existsById(datos.idMedico())){
             throw new ValidacionDeIntegridad("este id para el medico no fue encontrado");
 
         }
@@ -47,7 +48,7 @@ public class AgendaDeConsultaService {
         /*
         aqui realizamos un forech para que todos los validadores sean ejecutados ya que todos reciben el mismo parametro
         */
-         */
+
         validadores.forEach(v -> v.validar(datos));
 
 

@@ -25,6 +25,15 @@ public class TratadorDeErrores {
         return ResponseEntity.badRequest().body(errores);
     }
 
+    //agregando la clase ValidacionDeIntegridad para que los mensajes de esas validaciones sean enviados en la
+    // respuesta de la solicitud
+    @ExceptionHandler(ValidacionDeIntegridad.class)
+    public ResponseEntity errorHandlerValidacionesDeNegocio(Exception e){
+
+        //con body ya no necesitamos el built
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     private record DatosErrorValidacion(String campo, String error){
         public DatosErrorValidacion(FieldError error){
             this(error.getField(), error.getDefaultMessage());
