@@ -31,6 +31,7 @@ public class AgendaDeConsultaService {
 
         }
 
+        //validaciones
         var medico = seleccionarMedico(datos);
 
         var paciente = pacienteRepository.findById(datos.idPaciente()).get();
@@ -41,6 +42,15 @@ public class AgendaDeConsultaService {
     }
 
     private Medico seleccionarMedico(DatosAgendarConsulta datos) {
-        return null;
+        if(datos.idMedico()!=null){
+            return medicoRepository.getReferenceById(datos.idMedico());
+        }
+        if(datos.especilidad()==null)
+        {
+            throw new ValidacionDeIntegridad("debe selecccinar una especialidad para el medico");
+        }
+
+
+        return medicoRepository.seleccionarMedicoConEspecialidadEnFecha(datos.especialidad(),datos.fecha());
     }
 }
